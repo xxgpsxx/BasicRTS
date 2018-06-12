@@ -7,7 +7,7 @@ public class MainBuilding extends Building
 	private final static double vision = 50.0;
 	private final static int[] productionTimes = new int[10];//{4, 8, 12, 16, 6, 20, 24, 18, 25, 30}; //In seconds
 	private int[] productionCounter = new int[10];//{4, 8, 12, 16, 6, 20, 24, 18, 25, 30}; //In seconds
-	private int[] unitCosts = new int[10];//{50, 75, 125, 125, 225, 275, 350, 200, 400, 450};
+	public static int[] unitCosts = {50, 75, 125, 125, 225, 275, 350, 200, 400, 450};
 	private Unit[] units = {
 		new Worker(getLocation().getX() + size[0], getLocation().getY() + size[1])
 		}; //Write clases
