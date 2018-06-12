@@ -72,7 +72,7 @@ public class RangedUnit extends Unit
 				super.move();
 			}
 		}
-		else
+		else if(target != null)
 		{
 			moveTo(getTarget());
 			super.move();
