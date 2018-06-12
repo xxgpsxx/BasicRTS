@@ -18,6 +18,7 @@ public class Unit extends Thing
 	private Thing victim;
 	private Thing leader;
 	private Location center;
+	private boolean patrolling = false;
 	public Unit(Map map, int health, int armor, Location location, int owner, double vision, double speed, int damage, double radius, double attackSpeed)
 	{
 		super(map, health, armor, location, owner, vision);
@@ -54,6 +55,8 @@ public class Unit extends Thing
 
 		return center;
 	}
+	public boolean isPatrolling() { return patrolling; }
+	public void patrol() { patrolling = true; }
 	public int setOwner(int x) { return super.setOwner(x); }
 	public Map setMap(Map map) { return super.setMap(map); }
 	public double getAttackSpeed() { return attackSpeed; }
@@ -116,6 +119,47 @@ public class Unit extends Thing
 		}
 
 		return output;
+	}
+	public ArrayList <Thing> getHostileInVision()
+	{
+		ArrayList <Thing> output = new ArrayList <Thing>();
+		ArrayList <Thing> thingsInVision = getThingsInVision();
+
+		for(Thing thing : thingsInVision)
+			if(thing.getOwner() != getOwner())
+				output.add(thing);
+
+		return output;
+	}
+	public Thing getClosestHostile()
+	{
+		ArrayList <Thing> thingsInVision = getHostileInVision();
+
+		Thing target = null;
+		double minDistance = 100000.0;
+
+		for(Thing thing : thingsInVision)
+		{
+			if(getLocation().distanceFrom(thing.getCenter()) < minDistance)
+			{
+				target = thing;
+				minDistance = getLocation().distanceFrom(thing.getCenter());
+			}
+		}
+
+		return target;
+	}
+	public void station()
+	{
+		Thing target = getClosestHostile();
+
+		if(target != null)
+		{
+			attack();
+			moveTo(target.getLocation());
+		}
+
+
 	}
 	public void move()
 	{
@@ -295,6 +339,8 @@ public class Unit extends Thing
 			KeyCode code = event.getCode();
 			if(code == KeyCode.W)
 				stop();
+			else if(code == KeyCode.R)
+				patrol();
 		}
 		else if(input instanceof MouseEvent)
 		{
