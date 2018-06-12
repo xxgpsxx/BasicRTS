@@ -84,8 +84,7 @@ public class Runner extends Application implements EventHandler<InputEvent>
 	}
 	public void start(Stage stage)
 	{
-		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()[1];
-
+		GraphicsDevice gd = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices()[0];
 		screenDimensions[0] = gd.getDisplayMode().getWidth();
 		screenDimensions[1] = gd.getDisplayMode().getHeight();
 
@@ -219,8 +218,8 @@ public class Runner extends Application implements EventHandler<InputEvent>
 			}
 		});
 
-		stage.setX(-1928.0);
-		stage.setY(-207.0);
+		stage.setX(0);//-1928.0);
+		stage.setY(0);//-207.0);
 
 		gc = canvas.getGraphicsContext2D();
 
@@ -265,7 +264,7 @@ public class Runner extends Application implements EventHandler<InputEvent>
 			map.add(new MineralNode(loc));
 		}
 
-		for(int i = 0; i < 4; i++)
+		for(int i = 0; i < 60; i++)
 		{
 			int x = Util.rand(100, 200);
 			int y = Util.rand(first.getLocation().getY(), first.getLocation().getY() + first.getHeight());
@@ -278,7 +277,7 @@ public class Runner extends Application implements EventHandler<InputEvent>
 
 		first.setSpawnLocation();
 
-		player2.give(new Swordsman(new Location(1400, 500)));
+
 
 		spawnEnemyBase();
 
@@ -290,8 +289,59 @@ public class Runner extends Application implements EventHandler<InputEvent>
 	}
 	public void spawnEnemyBase()
 	{
-		player2.give(new Goal(300, 400));
+		player2.give(new Goal(screenDimensions[0] - 250, (screenDimensions[1]/2 - consoleDimensions[0]) + 125));
+		int x = 10000;
 
+		while(true)
+		{
+			Unit output = null;
+			int unit = Util.rand(0, 10);
+			Location spawnLocation = new Location(
+				Util.rand(1000, 1500),
+				Util.rand(0, map.getY()));
+
+			switch(unit)
+			{
+				case(0):
+					output = new Worker(spawnLocation);
+					break;
+				case(1):
+					output = new Swordsman(spawnLocation);
+					break;
+				case(2):
+					output = new Archer(spawnLocation);
+					break;
+				case(3):
+					output = new Crossbowman(spawnLocation);
+					break;
+				case(4):
+					output = new Longbowman(spawnLocation);
+					break;
+				case(5):
+					output = new Spearman(spawnLocation);
+					break;
+				case(6):
+					output = new Horsebackrider(spawnLocation);
+					break;
+				case(7):
+					output = new Sniper(spawnLocation);
+					break;
+				case(8):
+				case(9):
+					output = new Giant(spawnLocation);
+					break;
+			}
+
+			player2.give(output);
+			x -= MainBuilding.unitCosts[unit];
+			if(x <= 0)
+				break;
+		}
+
+		player2.give(new Swordsman(new Location(1400, 500)));
+
+		for(Unit unit : player2.getArmyUnits())
+			unit.attack();
 	}
 	public class AnimateObjects extends AnimationTimer
 	{
@@ -326,9 +376,6 @@ public class Runner extends Application implements EventHandler<InputEvent>
 				gc.setFill(color[player.getNumber()]);
 				for(Building building : player.getBuildings())
 				{
-					if(building instanceof Goal)
-						System.out.println(building.getHealth());
-
 					gc.setFill(color[player.getNumber()]);
 					gc.fillRect(
 						building.getLocation().getX(),
@@ -421,9 +468,12 @@ public class Runner extends Application implements EventHandler<InputEvent>
 
 					//System.out.println("MOVING: " + unit.isMoving());
 					//System.out.println("ATTACKING: " + unit.isAttacking());
-					if(unit.isMoving())
+					if(unit.isMoving() || unit.isAttacking())
 					{
-						if(unit.isAttacking())
+						if(unit.isPatrolling())
+							unit.station();
+
+						else if(unit.isAttacking())
 						{
 							if(unit instanceof MeleeUnit)
 								((MeleeUnit)unit).attackMove();
@@ -434,6 +484,7 @@ public class Runner extends Application implements EventHandler<InputEvent>
 							else
 								unit.move();
 						}
+
 						else
 							unit.move();
 					}
@@ -472,9 +523,9 @@ public class Runner extends Application implements EventHandler<InputEvent>
 						unit.getRadius(),
 						unit.getRadius());
 
-
 					if(player.inSelection(unit))
 					{
+						gc.setStroke(Color.BLACK);
 						for(int i = 0; i < border; i++)
 							gc.strokeOval(
 								unit.getLocation().getX() + i,
@@ -482,6 +533,15 @@ public class Runner extends Application implements EventHandler<InputEvent>
 								unit.getRadius() - (2 * i),
 								unit.getRadius() - (2 * i));
 					}
+
+					gc.setFill(Color.BLACK);
+					gc.setStroke(Color.WHITE);
+					Font font = Font.font("Times New Roman", FontWeight.NORMAL, (int)(unit.getRadius()/1.25));
+					gc.setFont(font);
+					gc.fillText(
+						unit.getClass().getName().substring(0, 2),
+						unit.getLocation().getX(),
+					unit.getLocation().getY() + unit.getRadius()/2 + 10);
 				}
 			}
 
@@ -514,6 +574,7 @@ public class Runner extends Application implements EventHandler<InputEvent>
 		}
 		public void drawConsole()
 		{
+			System.out.println("here");
 			gc.setStroke(Color.WHITE);
 			gc.setFill(Color.WHITE);
 			gc.setLineWidth(5);
